@@ -1,17 +1,9 @@
 package implementation;
 
-public abstract class Task extends Thread {
+public class Task extends AbstractTask {
 
-	Broker b;
-	Runnable r;
-	
-	Task(Broker b, Runnable r){
-		this.b = b;
-		this.r = r;
-		
-	}
-	
-	public static Broker getBroker(Task task) {
-		return task.b;
+	Task(Broker b, Runnable r) {
+		super(b, r);
+		throw new UnsupportedOperationException("Not yet implemented");
 	}
 }
