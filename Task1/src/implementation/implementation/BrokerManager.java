@@ -23,7 +23,7 @@ public class BrokerManager {
         for (Broker b : allBrokers){
             String bn = b.getName();
 
-            if bn.equals(name){
+            if (bn.equals(name)){
                 return b;
             }
         }

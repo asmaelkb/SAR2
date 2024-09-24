@@ -5,7 +5,7 @@ public abstract class AbstractBroker {
 	String name;
 	BrokerManager bm;
 
-	AbstractBroker(String name){
+	AbstractBroker(String name, BrokerManager bm){
 		this.name = name;
 		this.bm = bm;
 	}
