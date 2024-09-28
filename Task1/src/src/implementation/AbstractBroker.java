@@ -10,7 +10,6 @@ public abstract class AbstractBroker {
 		this.bm = bm;
 	}
 	
-	public abstract Channel accept(int port);
-	
-	public abstract Channel connect(String name, int port);
+	public abstract AbstractChannel accept(int port) throws InterruptedException;
+	public abstract AbstractChannel connect(String name, int port) throws InterruptedException;
 }
