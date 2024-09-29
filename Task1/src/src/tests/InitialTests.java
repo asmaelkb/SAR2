@@ -4,14 +4,13 @@ import implementation.*;
 
 public class InitialTests {
 	
-	public void testOneClient() throws InterruptedException {
-		BrokerManager brokerManager = new BrokerManager();
-		
-		Broker serverBroker = new Broker("Server", brokerManager);
+	public void testOneClient() throws InterruptedException, DisconnectedException {
+
+		Broker serverBroker = new Broker("Server");
 		Server server = new Server(serverBroker);
 		server.startServer(8080);
 		
-		Broker clientBroker = new Broker("Client", brokerManager);
+		Broker clientBroker = new Broker("Client");
 		AbstractChannel channel = clientBroker.connect("Server", 8080);
 		
 		byte[] msg = "Test".getBytes();
@@ -19,7 +18,7 @@ public class InitialTests {
 		
 		channel.write(msg, 0, msg.length);
 		
-		int bytesRead = server.channel.read(resp, 0, msg.length);
+		int bytesRead = channel.read(resp, 0, msg.length);
 		
 		String msgReceived = new String(resp, 0, bytesRead);
 		
@@ -31,6 +30,8 @@ public class InitialTests {
 	    
 	    channel.disconnect();
 	    server.channel.disconnect();
+	    
+	    System.out.println("Déconnexion du client et du serveur");
 	}
 	
 //	public void testMultipleClient() throws InterruptedException {

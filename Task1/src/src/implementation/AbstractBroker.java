@@ -3,11 +3,9 @@ package implementation;
 public abstract class AbstractBroker {
 
 	String name;
-	BrokerManager bm;
-
-	AbstractBroker(String name, BrokerManager bm){
+	
+	AbstractBroker(String name){
 		this.name = name;
-		this.bm = bm;
 	}
 	
 	public abstract AbstractChannel accept(int port) throws InterruptedException;

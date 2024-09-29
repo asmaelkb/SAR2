@@ -6,13 +6,23 @@ import java.util.Map;
 
 public class BrokerManager {
 	
-	ArrayList<Broker> allBrokers;
-	Map<Integer, Rdv> Rdvs;
+	public ArrayList<Broker> allBrokers;
+	private static BrokerManager instance;
 	
+    static {
+        try {
+            instance = new BrokerManager();
+        } catch (Exception e) {
+            throw new RuntimeException("Échec de l'initialisation de BrokerManager.");
+        }
+    }
 	
 	public BrokerManager() {	
 		allBrokers = new ArrayList<Broker>();
-		Rdvs = new HashMap<>();
+	}
+	
+	public static BrokerManager getSelf() {
+		return instance;
 	}
 	
 	public synchronized void addBrokers(Broker b) {
@@ -32,16 +42,6 @@ public class BrokerManager {
 		return null;
 	}
 	
-	 public synchronized Rdv findOrCreateRdv(int port) {
-		 
-		 Rdv Rdv = Rdvs.get(port);
-		 
-		 if (Rdv == null) {
-			 Rdv = new Rdv(port); 
-			 Rdvs.put(port, Rdv);
-		 }
-		 
-		 return Rdv;
-    }
+
 
 }

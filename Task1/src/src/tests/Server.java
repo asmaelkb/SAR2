@@ -17,7 +17,7 @@ public class Server {
 	            System.out.println("Server started, waiting for connections...");
 	            
 	            while (true) {
-	                AbstractChannel channel = broker.accept(port);
+	                this.channel = broker.accept(port);
 	                
 	                byte[] resp = new byte[256];
 	                
@@ -28,7 +28,9 @@ public class Server {
 	            
 	        } catch (InterruptedException e) {
 	            e.printStackTrace();
-	        }
+	        } catch (DisconnectedException e) {
+				e.printStackTrace();
+			}
 	    };
 
 	    Task serverTask = new Task(broker, serverRunnable);

@@ -5,8 +5,8 @@ public class Client {
 	
 	Broker clientBroker;
 	
-	public Client(String name, BrokerManager bm) {
-		this.clientBroker = new Broker(name, bm);
+	public Client(String name) {
+		this.clientBroker = new Broker(name);
 	}
 	
 	public void connectClient(String name, int port) {
@@ -18,8 +18,17 @@ public class Client {
 	            byte[] msg = m.getBytes();
 	            byte[] resp = new byte[256];
 	            
-	            channel.write(msg, 0, msg.length);
-	            channel.read(resp, 0, msg.length);
+	            try {
+					channel.write(msg, 0, msg.length);
+				} catch (DisconnectedException e) {
+					e.printStackTrace();
+				}
+	            
+	            try {
+					channel.read(resp, 0, msg.length);
+				} catch (DisconnectedException e) {
+					e.printStackTrace();
+				}
 	            
 	        } catch (InterruptedException e) {
 	            e.printStackTrace();
