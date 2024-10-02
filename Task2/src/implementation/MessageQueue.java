@@ -30,12 +30,12 @@ public class MessageQueue {
 	}
 
 	
-	void close() {
+	public void close() {
 		channel.disconnect();
 		isClosed = true;
 	}
 	
-	boolean closed() {
+	public boolean closed() {
 		return isClosed;
 	}
 
