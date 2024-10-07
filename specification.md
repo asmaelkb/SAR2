@@ -7,17 +7,17 @@ Les méthodes sont toujours bloquantes, ce qui justifie le fait que cette versio
 
 ## Classe EventQueueBroker
 
-QueueBroker est une classe abstraite utilisée pour gérer les connexions réseau et la communication via des files de messages (MessageQueue). Elle permet à un client de se connecter à un serveur ou à un serveur d'accepter des connexions entrantes.
+EventQueueBroker est une classe abstraite utilisée pour gérer les connexions réseau et la communication via des files de messages (EventMessageQueue). Elle permet à un client de se connecter à un serveur ou à un serveur d'accepter des connexions entrantes.
 
 ### Constructeur
 
-`QueueBroker(String name)`: Initialise une instance de QueueBroker avec un nom spécifié.
+`EventQueueBroker(String name)`: Initialise une instance de EventQueueBroker avec un nom spécifié.
 
 ### Méthodes
 
 `boolean bind(int port, AcceptListener listener)` :
 
-- Associe le QueueBroker à un port spécifique et commence à écouter les connexions entrantes.
+- Associe le EventQueueBroker à un port spécifique et commence à écouter les connexions entrantes.
 - Si une connexion est acceptée, l'interface AcceptListener est utilisée pour gérer cet événement.
 - Retourne true si la liaison est réussie, sinon false.
 
@@ -28,7 +28,7 @@ QueueBroker est une classe abstraite utilisée pour gérer les connexions résea
 
 `boolean connect(String name, int port, ConnectListener listener)` :
 
-- Tente de se connecter à un QueueBroker distant identifié par son nom et le port spécifié.
+- Tente de se connecter à un EventQueueBroker distant identifié par son nom et le port spécifié.
 - Utilise l'interface ConnectListener pour notifier si la connexion a été acceptée (connected()) ou refusée (refused()).
 - Retourne true si la tentative de connexion est initiée avec succès, sinon false.
 
@@ -38,16 +38,16 @@ On crée des méthodes AcceptListener et ConnectListener puisque ces deux métho
 
 #### AcceptListener
 
-`void accepted(MessageQueue queue)` : Méthode appelée lorsque le serveur accepte une nouvelle connexion, fournissant la file de messages correspondante.
+`void accepted(EventMessageQueue queue)` : Méthode appelée lorsque le serveur accepte une nouvelle connexion, fournissant la file de messages correspondante.
 
 #### ConnectListener
 
-`void connected(MessageQueue queue)` : Méthode appelée lorsque la connexion au serveur est réussie, fournissant la file de messages correspondante.
+`void connected(EventMessageQueue queue)` : Méthode appelée lorsque la connexion au serveur est réussie, fournissant la file de messages correspondante.
 `void refused()` : Méthode appelée si la tentative de connexion au serveur est refusée.
 
 ## Classe EventMessageQueue
 
-MessageQueue est une classe abstraite qui représente une file de messages pour la communication entre les clients et les serveurs. Elle permet d'envoyer, de recevoir et de gérer les messages dans le cadre d'une connexion.
+EventMessageQueue est une classe abstraite qui représente une file de messages pour la communication entre les clients et les serveurs. Elle permet d'envoyer, de recevoir et de gérer les messages dans le cadre d'une connexion.
 
 ### Méthodes
 
@@ -76,7 +76,24 @@ MessageQueue est une classe abstraite qui représente une file de messages pour 
 
 ## Executor (EventPump)
 
-Chaque tâche (Runnable) est postée dans la pompe à événements.
+Executor est classe qui exécute qui contiendra un objet qui est une pompe à événements. Chaque TaskEvent va poster (ajouter) son Runnable grâce à la méthode post(Runnable r), qui sera ajoutée à la liste des Runnable de la pompe à événements.
+Ici, Executor extends Thread ce qui veut dire qu'il a une méthode run() qui va être fait. Dans notre cas, on a un public synchronized void run() où on fait le run de tous les runnables se trouvant dans notre liste de queue.
+
+Nous avons aussi : 
+- Une méthode  public synchronized void post(Runnable r) afin d'ajouter des runnable à notre pompe à events
+- Une méthode private void sleep() qui va endormir la pompe à event  
+
 EventPump est un singleton, une unique instance est créée quand la classe est chargée par la JVM.
+
+## TaskEvent
+
+post(Runnable r) : Permet d'ajouter une tâche (représentée par un Runnable) pour exécution asynchrone.
+
+task() : Renvoie l'instance de la tâche courante.
+
+kill() : Arrête la tâche en cours, empêchant son exécution future.
+
+killed() : Indique si la tâche a été arrêtée.
+
 
 
