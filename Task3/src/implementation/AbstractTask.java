@@ -1,7 +1,10 @@
 package implementation;
 
+import events.EventQueueBroker;
+
 public abstract class AbstractTask extends Thread {
 
+	EventQueueBroker eventQueueB;
 	QueueBroker queueB;
 	Broker b;
 	Runnable r;
@@ -13,6 +16,11 @@ public abstract class AbstractTask extends Thread {
 	
 	public AbstractTask(QueueBroker b, Runnable r) {
 		this.queueB = b;
+		this.r = r;
+	}
+	
+	public AbstractTask(EventQueueBroker b, Runnable r) {
+		this.eventQueueB = b;
 		this.r = r;
 	}
 	
