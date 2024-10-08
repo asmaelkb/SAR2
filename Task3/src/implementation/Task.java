@@ -1,5 +1,7 @@
 package implementation;
 
+import events.EventQueueBroker;
+
 public class Task extends AbstractTask {
 
 	
@@ -7,7 +9,7 @@ public class Task extends AbstractTask {
 		super(b, r);
 	}
 	
-	public Task(QueueBroker b, Runnable r) {
+	public Task(EventQueueBroker b, Runnable r) {
 		super(b, r);
 	}
 	
@@ -20,9 +22,9 @@ public class Task extends AbstractTask {
 		return t.b;
 	}
 	
-	public static QueueBroker getQueueBroker() {
+	public static EventQueueBroker getQueueBroker() {
 		AbstractTask t = (AbstractTask) currentThread();
-		return (QueueBroker)t.queueB;
+		return (EventQueueBroker)t.eventQueueB;
 	}
 	
 	public static Task getTask() {

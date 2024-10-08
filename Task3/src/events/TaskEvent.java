@@ -1,14 +1,11 @@
 package events;
 
-import implementation.AbstractTask;
-import implementation.QueueBroker;
-
-public class TaskEvent extends AbstractTask {
+public abstract class TaskEvent implements Runnable {
 	
 	boolean isKilled;
 	
-	public TaskEvent(QueueBroker b, Runnable r) {
-		super(b, r);
+	public TaskEvent() {
+		isKilled = false;
 	}
 
 	public void post(Runnable r) {
@@ -17,15 +14,15 @@ public class TaskEvent extends AbstractTask {
 		}
 	}
 	public static TaskEvent task() {
-		TaskEvent t = (TaskEvent) currentThread();
-		return t;
+		return Executor.getSelf().getRunnable();
 	}
 	
 	public void kill() {
-		
+		isKilled = true;
 	}
 	
 	boolean killed() {
 		return this.isKilled;
 	}
+
 }

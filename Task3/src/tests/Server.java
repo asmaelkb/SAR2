@@ -1,12 +1,13 @@
 package tests;
 
+import events.EventQueueBroker;
 import implementation.*;
 
 public class Server {
 
-    QueueBroker queueBroker;
+    EventQueueBroker queueBroker;
 
-    public Server(QueueBroker qb) {
+    public Server(EventQueueBroker qb) {
         this.queueBroker = qb;
     }
 

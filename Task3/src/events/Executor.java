@@ -6,6 +6,7 @@ import java.util.List;
 public class Executor extends Thread {
 	
 	List<Runnable> pumpEvent;
+	private static Runnable currentRunnable;
 	
 	private static Executor instance;
 	
@@ -23,12 +24,11 @@ public class Executor extends Thread {
 	
 	
 	public synchronized void run() {
-		Runnable r;
 		while(true) {
-			r = pumpEvent.remove(0);
-			while (r!=null) {
-				r.run();
-				r = pumpEvent.remove(0);
+			currentRunnable = pumpEvent.remove(0);
+			while (currentRunnable!=null) {
+				currentRunnable.run();
+				currentRunnable = pumpEvent.remove(0);
 			}
 			sleep();
 		}
@@ -37,6 +37,10 @@ public class Executor extends Thread {
 	public synchronized void post(Runnable r) {
 		pumpEvent.add(r);
 		notify();
+	}
+	
+	public TaskEvent getRunnable() {
+		return (TaskEvent)currentRunnable;
 	}
 	
 	private void sleep() {

@@ -1,13 +1,14 @@
 package tests;
 
+import events.EventQueueBroker;
 import implementation.*;
 
 public class Client {
 
-	QueueBroker queueBroker;
+	EventQueueBroker queueBroker;
 
 	public Client(String name) {
-		this.queueBroker = new QueueBroker(new Broker(name));
+		this.queueBroker = new EventQueueBroker(name);
 	}
 
 	public void connectClient(String name, int port) {

@@ -3,13 +3,15 @@ package events;
 import abs.AbstractEventMessageQueue;
 import implementation.Channel;
 import implementation.DisconnectedException;
+import taskevents.SendTaskEvent;
 
 public class EventMessageQueue extends AbstractEventMessageQueue{
 	
-	Channel channel;
+	public Channel channel;
+	public EventMessageQueue remoteMq;
 
-    public EventMessageQueue(String name) {
-		super(name);
+    public EventMessageQueue(Channel channel) {
+		this.channel = channel;
 	}
 
 	private Listener listener;
@@ -27,6 +29,11 @@ public class EventMessageQueue extends AbstractEventMessageQueue{
     public boolean send(byte[] bytes) throws DisconnectedException {
         return send(new Message(bytes, 0, bytes.length));
     }
+    
+    public boolean _send(Message message) {
+		TaskEvent task = new SendTaskEvent(this, message);
+		return true;
+	}
 
     @Override
     public boolean send(Message msg) throws DisconnectedException {

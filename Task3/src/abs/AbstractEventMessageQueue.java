@@ -5,9 +5,6 @@ import implementation.DisconnectedException;
 
 public abstract class AbstractEventMessageQueue {
 
-	public AbstractEventMessageQueue(String name) {
-		
-	}
 	
 	public interface Listener {
 		void received(Message msg);
