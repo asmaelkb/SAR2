@@ -10,7 +10,6 @@ public class EventMessageQueue extends AbstractEventMessageQueue{
 
     public EventMessageQueue(String name) {
 		super(name);
-		// TODO Auto-generated constructor stub
 	}
 
 	private Listener listener;
@@ -26,17 +25,18 @@ public class EventMessageQueue extends AbstractEventMessageQueue{
     }
 
     public boolean send(byte[] bytes) throws DisconnectedException {
-        return send(bytes, 0, bytes.length);
+        return send(new Message(bytes, 0, bytes.length));
     }
 
-    public boolean send(byte[] bytes, int offset, int length) throws DisconnectedException {
+    @Override
+    public boolean send(Message msg) throws DisconnectedException {
         if (isClosed) {
             System.out.println("MessageQueue is closed. Cannot send message.");
             return false;
         }
-        channel.write(bytes, offset, length);
-        byte[] message = new byte[length];
-        System.arraycopy(bytes, offset, message, 0, length);
+        channel.write(msg.bytes, msg.offset, msg.length);
+        byte[] message = new byte[msg.length];
+        System.arraycopy(msg.bytes, msg.offset, message, 0, msg.length);
         
         if (listener != null) {
             listener.received(message);
@@ -61,4 +61,5 @@ public class EventMessageQueue extends AbstractEventMessageQueue{
 	protected void setListener(abs.AbstractEventMessageQueue.Listener l) {
 		this.listener = (Listener) l;
 	}
+
 }

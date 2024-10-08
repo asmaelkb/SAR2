@@ -7,7 +7,6 @@ import abs.AbstractEventQueueBroker;
 
 public class EventQueueBroker extends AbstractEventQueueBroker {
 
-    private String name;
     private Map<Integer, AcceptListener> listeners = new HashMap<>();
 
     public EventQueueBroker(String name) {
@@ -49,13 +48,17 @@ public class EventQueueBroker extends AbstractEventQueueBroker {
 		AcceptListener acceptListener = listeners.get(port);
         if (acceptListener != null) {
             EventMessageQueue messageQueue = new EventMessageQueue(name);
-            acceptListener.accepted(messageQueue);
-            listener.connected(messageQueue);
-            System.out.println("Connection to " + name + " on port " + port + " was successful.");
+            Executor.getSelf().post(() -> {
+                acceptListener.accepted(messageQueue);
+                listener.connected(messageQueue);
+                System.out.println("Connection to " + name + " on port " + port + " was successful.");
+            });
             return true;
         } else {
-            listener.refused();
-            System.out.println("Connection to " + name + " on port " + port + " was refused.");
+            Executor.getSelf().post(() -> {
+                listener.refused();
+                System.out.println("Connection to " + name + " on port " + port + " was refused.");
+            });
             return false;
         }
 	}

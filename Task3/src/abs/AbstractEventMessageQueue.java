@@ -1,5 +1,6 @@
 package abs;
 
+import events.Message;
 import implementation.DisconnectedException;
 
 public abstract class AbstractEventMessageQueue {
@@ -9,14 +10,15 @@ public abstract class AbstractEventMessageQueue {
 	}
 	
 	public interface Listener {
-		void received(byte[] msg);
+		void received(Message msg);
+		void sent(Message msg);
 		void closed();
 	}
 	
 	protected abstract void setListener(Listener l);
 	
 	public abstract boolean send(byte[] bytes) throws DisconnectedException;
-	public abstract boolean send(byte[] bytes, int offset, int length) throws DisconnectedException;
+	public abstract boolean send(Message msg) throws DisconnectedException;
 	
 	public abstract void close();
 	public abstract boolean closed();
