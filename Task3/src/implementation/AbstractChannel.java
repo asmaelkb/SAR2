@@ -1,12 +1,10 @@
 package implementation;
 
-import events.EventQueueBroker;
-
 public abstract class AbstractChannel {
 	
-	EventQueueBroker b;
+	Broker b;
 	
-	public AbstractChannel(EventQueueBroker b) {
+	public AbstractChannel(Broker b) {
 		this.b = b;
 	}
 	

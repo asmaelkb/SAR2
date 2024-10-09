@@ -8,7 +8,7 @@ public abstract class TaskEvent implements Runnable {
 		isKilled = false;
 	}
 
-	public void post(Runnable r) {
+	public synchronized void post(Runnable r) {
 		if (!isKilled) {
 			Executor.getSelf().post(r);
 		}

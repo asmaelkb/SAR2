@@ -1,53 +1,54 @@
 package tests;
 
+import events.EventMessageQueue;
+import events.Executor;
 import events.EventQueueBroker;
-import implementation.*;
+import events.TaskEvent;
 
 public class Server {
 
-    EventQueueBroker queueBroker;
+    private EventQueueBroker queueBroker;
 
     public Server(EventQueueBroker qb) {
         this.queueBroker = qb;
     }
 
-    public void startServer(int port) throws InterruptedException {
-        Runnable serverRunnable = () -> {
-            try {
-                System.out.println("Server started, waiting for connections...");
+    public void startServer(int port) {
+        queueBroker.bind(port, queue -> {
+            System.out.println("New client connected on port: " + port);
 
-                while (true) {
-                    MessageQueue clientQueue = queueBroker.accept(port);
-                    System.out.println("New client connected");
-
-                    // Pour chaque connexion de client, lancer une nouvelle task pour le gérer
-                    new Task(queueBroker, () -> handleClient(clientQueue)).start();
+            TaskEvent clientTask = new TaskEvent() {
+                @Override
+                public void run() {
+                    handleClient(queue);
                 }
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        };
-
-        new Task(queueBroker, serverRunnable).start();
+            };
+            Executor.getSelf().post(clientTask);
+        });
     }
 
+    private void handleClient(EventMessageQueue mq) {
+        boolean[] messageEchoed = { false };
 
-    void handleClient(MessageQueue mq) {
-    	try {
-            while (!mq.closed()) {
-                byte[] receivedMessage = mq.receive();
-                mq.send(receivedMessage, 0, receivedMessage.length);
+        mq.setListener(new EventMessageQueue.Listener() {
+            @Override
+            public void received(byte[] msg) {
+                String receivedMessage = new String(msg);
+                System.out.println("Server received message: " + receivedMessage);
+
+                if (!messageEchoed[0]) {
+                    Executor.getSelf().post(() -> {
+                        System.out.println("Echoing message: " + receivedMessage);
+						messageEchoed[0] = true;
+                    });
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                mq.close();
+
+            @Override
+            public void closed() {
                 System.out.println("Client disconnected");
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-        }
+        });
     }
+
 }

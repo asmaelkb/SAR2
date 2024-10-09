@@ -1,17 +1,20 @@
 package events;
 
+import java.util.List;
+
 import abs.AbstractEventMessageQueue;
 import implementation.Channel;
 import implementation.DisconnectedException;
-import taskevents.SendTaskEvent;
+
+import java.util.LinkedList;
 
 public class EventMessageQueue extends AbstractEventMessageQueue{
 	
-	public Channel channel;
-	public EventMessageQueue remoteMq;
+	Channel channel;
+	public List<Message> pendingMessages = new LinkedList<>();
 
-    public EventMessageQueue(Channel channel) {
-		this.channel = channel;
+    public EventMessageQueue(String name) {
+		super(name);
 	}
 
 	private Listener listener;
@@ -27,30 +30,23 @@ public class EventMessageQueue extends AbstractEventMessageQueue{
     }
 
     public boolean send(byte[] bytes) throws DisconnectedException {
-        return send(new Message(bytes, 0, bytes.length));
+    	Message message = new Message(bytes, 0, bytes.length);
+        return send(message);
     }
-    
-    public boolean _send(Message message) {
-		TaskEvent task = new SendTaskEvent(this, message);
-		return true;
-	}
 
-    @Override
-    public boolean send(Message msg) throws DisconnectedException {
+    public synchronized boolean send(Message message) throws DisconnectedException {
         if (isClosed) {
             System.out.println("MessageQueue is closed. Cannot send message.");
             return false;
         }
-        channel.write(msg.bytes, msg.offset, msg.length);
-        byte[] message = new byte[msg.length];
-        System.arraycopy(msg.bytes, msg.offset, message, 0, msg.length);
-        
-        if (listener != null) {
-            listener.received(message);
+
+        pendingMessages.add(message);
+        synchronized (pendingMessages) {
+            pendingMessages.notify();
         }
-        System.out.println("Message sent successfully.");
         return true;
     }
+
 
     public void close() {
         isClosed = true;
@@ -64,9 +60,9 @@ public class EventMessageQueue extends AbstractEventMessageQueue{
         return isClosed;
     }
 
+
 	@Override
 	protected void setListener(abs.AbstractEventMessageQueue.Listener l) {
 		this.listener = (Listener) l;
 	}
-
 }

@@ -1,47 +1,53 @@
 package tests;
 
+import abs.AbstractEventQueueBroker;
+import events.EventMessageQueue;
 import events.EventQueueBroker;
-import implementation.*;
+import implementation.DisconnectedException;
 
 public class Client {
 
-	EventQueueBroker queueBroker;
+    private EventQueueBroker queueBroker;
+    private boolean messageSent; 
 
-	public Client(String name) {
-		this.queueBroker = new EventQueueBroker(name);
-	}
+    public Client(String name, EventQueueBroker broker) {
+        this.queueBroker = broker;
+        this.messageSent = false;
+    }
 
-	public void connectClient(String name, int port) {
-		Runnable clientRunnable = () -> {
-	        try {
-	            MessageQueue queue = queueBroker.connect(name, port);
+    public void connectClient(int port) {
+        queueBroker.connect("Server", port, new AbstractEventQueueBroker.ConnectListener() {
+            @Override
+            public void connected(EventMessageQueue queue) {
+                queue.setListener(new EventMessageQueue.Listener() {
+                    @Override
+                    public void received(byte[] msg) {
+                        String responseMessage = new String(msg);
+                    }
 
-	            String m = "Test client " + String.valueOf(Thread.currentThread().getId());
-	            byte[] msg = m.getBytes();
-	            queue.send(msg, 0, msg.length);
+                    @Override
+                    public void closed() {
+                        System.out.println("Connection closed by the server.");
+                    }
+                });
 
-	            byte[] resp = queue.receive();
-	            String respMessage = new String(resp);
+                if (!messageSent) {
+                    String message = "Test client N°" + Thread.currentThread().getId();
+                    byte[] msg = message.getBytes();
+                    try {
+                        queue.send(msg);
+                        messageSent = true;
+                        System.out.println("Client sent message: " + message);
+                    } catch (DisconnectedException e) {
+                        System.err.println("Failed to send message: " + e.getMessage());
+                    }
+                }
+            }
 
-	            System.out.println("Client received: " + respMessage);
-
-	            if (queue != null && !queue.closed()) {
-				    try {
-				        queue.close();
-				    } catch (Exception e) {
-				        e.printStackTrace();
-				    }
-				}
-
-	        } catch (InterruptedException e) {
-	            e.printStackTrace();
-	        } catch (DisconnectedException e1) {
-				e1.printStackTrace();
-			}
-	    };
-
-	    new Task(queueBroker, clientRunnable).start();
-
-	}
-
+            @Override
+            public void refused() {
+                System.out.println("Connection refused by the server.");
+            }
+        });
+    }
 }

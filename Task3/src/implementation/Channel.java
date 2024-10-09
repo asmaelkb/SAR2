@@ -13,7 +13,7 @@ public class Channel extends AbstractChannel {
 	boolean dangling; // Booléen qui indique que l'autre bout est déconnecté
 	String rname;
 	
-	public Channel(EventQueueBroker b, int port, CircularBuffer in, CircularBuffer out) {
+	public Channel(Broker b, int port, CircularBuffer in, CircularBuffer out) {
 		super(b);
 		this.port = port;
 		this.in = in;

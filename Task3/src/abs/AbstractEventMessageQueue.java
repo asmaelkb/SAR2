@@ -12,6 +12,10 @@ public abstract class AbstractEventMessageQueue {
 		void closed();
 	}
 	
+	public AbstractEventMessageQueue(String name) {
+		// TODO Auto-generated constructor stub
+	}
+
 	protected abstract void setListener(Listener l);
 	
 	public abstract boolean send(byte[] bytes) throws DisconnectedException;
