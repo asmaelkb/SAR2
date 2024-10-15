@@ -20,8 +20,11 @@ public class ConnectTaskEvent extends TaskEvent {
 	
 	@Override
 	public void run() {
-		// Faire le connect
-		listener.connected(null);
+		try {
+			broker._connect(name, port, listener);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		this.kill();
 		
 	}
