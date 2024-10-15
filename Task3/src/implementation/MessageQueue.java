@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 public class MessageQueue {
 	
-	Channel channel;
+	public Channel channel;
 	boolean isClosed;
 
 	public MessageQueue(Channel current) {

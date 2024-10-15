@@ -1,5 +1,6 @@
 package implementation;
 
+import abs.AbstractTask;
 import events.EventQueueBroker;
 
 public class Task extends AbstractTask {

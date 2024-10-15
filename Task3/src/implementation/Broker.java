@@ -3,6 +3,9 @@ package implementation;
 import java.util.HashMap;
 import java.util.Map;
 
+import abs.AbstractBroker;
+import abs.AbstractChannel;
+
 public class Broker extends AbstractBroker {
 
 	BrokerManager bm = BrokerManager.getSelf();;

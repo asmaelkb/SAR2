@@ -8,16 +8,12 @@ public abstract class TaskEvent implements Runnable {
 		isKilled = false;
 	}
 
-	public synchronized void post(Runnable r) {
-		if (!isKilled) {
-			Executor.getSelf().post(r);
-		}
-	}
-	public static TaskEvent task() {
-		return Executor.getSelf().getRunnable();
+	public void react() {
+		this.run();
 	}
 	
 	public void kill() {
+		Executor.getSelf().pumpEvent.remove(this);
 		isKilled = true;
 	}
 	

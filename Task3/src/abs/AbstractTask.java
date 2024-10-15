@@ -1,12 +1,13 @@
-package implementation;
+package abs;
 
 import events.EventQueueBroker;
+import implementation.Broker;
 
 public abstract class AbstractTask extends Thread {
 
-	EventQueueBroker eventQueueB;
-	Broker b;
-	Runnable r;
+	public EventQueueBroker eventQueueB;
+	public Broker b;
+	protected Runnable r;
 	
 	public AbstractTask(Broker b, Runnable r) {
 		this.b = b;

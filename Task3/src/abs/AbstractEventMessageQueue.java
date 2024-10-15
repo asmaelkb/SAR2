@@ -6,14 +6,11 @@ import implementation.DisconnectedException;
 public abstract class AbstractEventMessageQueue {
 
 	
+	
 	public interface Listener {
 		void received(Message msg);
 		void sent(Message msg);
 		void closed();
-	}
-	
-	public AbstractEventMessageQueue(String name) {
-		// TODO Auto-generated constructor stub
 	}
 
 	protected abstract void setListener(Listener l);

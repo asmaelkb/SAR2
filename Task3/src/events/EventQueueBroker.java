@@ -6,103 +6,100 @@ import java.util.Map;
 import abs.AbstractEventQueueBroker;
 import implementation.Broker;
 import implementation.DisconnectedException;
+import implementation.MessageQueue;
 import implementation.Task;
+import taskevents.BindTaskEvent;
+import taskevents.ConnectTaskEvent;
+import taskevents.UnbindTaskEvent;
 import implementation.CircularBuffer;
 import implementation.Channel;
 
 public class EventQueueBroker extends AbstractEventQueueBroker {
 
-    private static Map<Integer, AcceptListener> listeners = new HashMap<>();
-    private Broker broker;
-    private Task t;
+    public static Map<Integer, AcceptListener> listeners = new HashMap<>();
+    public Broker broker;
+    
 
     public EventQueueBroker(String name) {
         super(name);
-        broker = new Broker(name);
+    }
+    
+    public String getName() {
+    	return broker.getName();
+    }
+    
+    public void setBroker(Broker broker) {
+    	this.broker = broker;
     }
 
     public Broker getBroker() {
         return broker;
     }
-
+    
     @Override
     public boolean bind(int port, AcceptListener listener) {
-        if (listeners.containsKey(port)) {
-            System.out.println("Port " + port + " is already bound.");
-            return false;
-        }
-
-        listeners.put(port, listener);
-        System.out.println("Port " + port + " bound successfully.");
-
-        broker = new Broker("ServerBroker");
-
-        new Thread(() -> {
-            while (true) {
-                try {
-                    broker.accept(port);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-            }
-        }).start();
-
-        return true;
+    	BindTaskEvent bindTask = new BindTaskEvent(this, port, listener);
+    	Executor.getSelf().post(bindTask);
+    	return true;
     }
+    
+    public void _bind(int port, AcceptListener listener) {
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				do {
+					
+					listeners.put(port, listener);
+					Channel channelAccept;
+					try {
+						channelAccept = (Channel) broker.accept(port);
+						MessageQueue mq = new MessageQueue(channelAccept);
+						EventMessageQueue emq = new EventMessageQueue(mq);
+						listener.accepted(emq);
+					} catch (IllegalStateException | InterruptedException e) {
+						e.printStackTrace();
+					}
+					
 
+					
+				} while(listeners.get(port) != null);
+				
+			}
+		}).start();
+	}
+    
     @Override
     public boolean unbind(int port) {
-        if (listeners.remove(port) != null) {
-            System.out.println("Port " + port + " unbound successfully.");
-            return true;
-        }
-        System.out.println("Port " + port + " is not bound.");
-        return false;
+    	UnbindTaskEvent unbindTask = new UnbindTaskEvent(this, port);
+    	Executor.getSelf().post(unbindTask);
+    	return true;
     }
-
+    
+    public void _unbind(int port) {
+    	listeners.remove(port);
+    }
+    
+    @Override
     public boolean connect(String name, int port, ConnectListener listener) {
-        AcceptListener acceptListener = listeners.get(port);
-        if (acceptListener != null) {
-            EventMessageQueue messageQueue = new EventMessageQueue(name);
-            
-            CircularBuffer in = new CircularBuffer(512);
-            CircularBuffer out = new CircularBuffer(512);
-            
-            messageQueue.channel = new Channel(broker, port, in, out);
-            
-            acceptListener.accepted(messageQueue);
-            listener.connected(messageQueue);
-            
-            Runnable readRunnable = () -> {
-                synchronized (messageQueue.pendingMessages) {
-                    while (messageQueue.pendingMessages.isEmpty()) {
-                        try {
-                            messageQueue.pendingMessages.wait();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    Message message = messageQueue.pendingMessages.remove(0);
-                    try {
-                        messageQueue.channel.write(message.bytes, message.offset, message.length);
-                    } catch (DisconnectedException e) {
-                        System.err.println("Failed to send message: " + e.getMessage());
-                    }
-                }
-            };
-
-            
-            t = new Task(broker, readRunnable);
-            t.start();
-           
-            return true;
-        } else {
-            Executor.getSelf().post(() -> {
-                listener.refused();
-                System.out.println("Connection to " + name + " on port " + port + " was refused.");
-            });
-            return false;
-        }
+    	ConnectTaskEvent connectTask = new ConnectTaskEvent(this, name, port, listener);
+    	Executor.getSelf().post(connectTask);
+    	return true;
     }
+    
+    public void _connect(String name, int port, ConnectListener listener) throws InterruptedException {
+    	Channel channelConnect = (Channel) broker.connect(name, port);
+		
+		if (channelConnect == null) {
+			listener.refused();
+		}
+		else {
+			MessageQueue mq = new MessageQueue(channelConnect);
+			EventMessageQueue emq = new EventMessageQueue(mq);
+			listener.connected(emq);
+    }
+		
+		
+    }	
+		
 }

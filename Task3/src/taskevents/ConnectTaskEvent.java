@@ -20,9 +20,9 @@ public class ConnectTaskEvent extends TaskEvent {
 	
 	@Override
 	public void run() {
-		if (broker.connect(name, port, listener)) {
-			this.kill();
-		}
+		// Faire le connect
+		listener.connected(null);
+		this.kill();
 		
 	}
 

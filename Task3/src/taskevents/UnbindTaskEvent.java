@@ -15,9 +15,8 @@ public class UnbindTaskEvent extends TaskEvent {
 	
 	@Override
 	public void run() {
-		if (broker.unbind(port)) {
-			this.kill();
-		}
+		broker._unbind(port);
+		this.kill();
 		
 	}
 

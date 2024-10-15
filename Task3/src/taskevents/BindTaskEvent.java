@@ -1,26 +1,27 @@
 package taskevents;
 
+import abs.AbstractChannel;
 import abs.AbstractEventQueueBroker.AcceptListener;
 import events.EventQueueBroker;
 import events.TaskEvent;
+import implementation.Channel;
 
 public class BindTaskEvent extends TaskEvent {
 	
-	private EventQueueBroker broker;
-	private int port;
-	private AcceptListener listener;
+	public EventQueueBroker queueBroker;
+	public int port;
+	public AcceptListener listener;
 	
-	public BindTaskEvent(EventQueueBroker broker, int port, AcceptListener listener) {
-		this.broker = broker;
+	public BindTaskEvent(EventQueueBroker queueBroker, int port, AcceptListener listener) {
+		this.queueBroker = queueBroker;
 		this.port = port;
 		this.listener = listener;
 	}
 
 	@Override
 	public void run() {
-		if(broker.bind(port, listener)) {
-			this.kill();
-		}
+		queueBroker._bind(port, listener);
+		this.kill();
 		
 	}
 

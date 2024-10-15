@@ -1,5 +1,6 @@
 package implementation;
 
+import abs.AbstractChannel;
 import events.EventQueueBroker;
 
 public class Channel extends AbstractChannel {

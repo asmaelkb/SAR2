@@ -1,4 +1,7 @@
-package implementation;
+package abs;
+
+import implementation.Broker;
+import implementation.DisconnectedException;
 
 public abstract class AbstractChannel {
 	

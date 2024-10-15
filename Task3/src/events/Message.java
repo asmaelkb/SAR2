@@ -1,9 +1,9 @@
 package events;
 
 public class Message {
-	byte[] bytes;
-	int offset;
-	int length;
+	public byte[] bytes;
+	public int offset;
+	public int length;
 	
 	public Message(String msg) {
 		bytes = msg.getBytes();

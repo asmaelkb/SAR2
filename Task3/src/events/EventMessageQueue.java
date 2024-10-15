@@ -1,68 +1,112 @@
 package events;
 
-import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import abs.AbstractEventMessageQueue;
 import implementation.Channel;
 import implementation.DisconnectedException;
-
-import java.util.LinkedList;
+import implementation.MessageQueue;
+import implementation.Task;
+import taskevents.CloseTaskEvent;
+import taskevents.SendTaskEvent;
 
 public class EventMessageQueue extends AbstractEventMessageQueue{
 	
-	Channel channel;
-	public List<Message> pendingMessages = new LinkedList<>();
+	public Channel channel;
+	public MessageQueue msgQueue;
+	
+	private final Thread reader;
+	private final Thread writer;
 
-    public EventMessageQueue(String name) {
-		super(name);
+    public boolean isClosed = false;
+    
+    public BlockingQueue<Message> pendingMsg = new LinkedBlockingQueue<>();
+    private Listener listener;
+
+    public EventMessageQueue(MessageQueue msgQueue) {
+		this.msgQueue = msgQueue;
+		this.channel = this.msgQueue.channel;
+		this.writer = new Thread(() -> sender());
+		this.reader = new Thread(() -> receiver());
+		this.writer.start();
 	}
-
-	private Listener listener;
-    private boolean isClosed = false;
-
-    public interface Listener {
-        void received(byte[] msg);
-        void closed();
-    }
-
-    public void setListener(Listener listener) {
-        this.listener = listener;
-    }
 
     public boolean send(byte[] bytes) throws DisconnectedException {
     	Message message = new Message(bytes, 0, bytes.length);
         return send(message);
     }
-
-    public synchronized boolean send(Message message) throws DisconnectedException {
+    
+    public boolean send(Message message) {
+    	SendTaskEvent sendMsg = new SendTaskEvent(this, message, listener);
+    	Executor.getSelf().post(sendMsg);
+    	return true;
+    }
+    
+    public boolean _send(Message message) throws DisconnectedException {
         if (isClosed) {
             System.out.println("MessageQueue is closed. Cannot send message.");
             return false;
         }
-
-        pendingMessages.add(message);
-        synchronized (pendingMessages) {
-            pendingMessages.notify();
+        
+        synchronized (pendingMsg) {
+        	pendingMsg.add(message);
+        	pendingMsg.notify();
         }
+        
         return true;
     }
+   
+    
+    private void receiver() {
+        while (true) {
 
+            try {
+                byte[] msg = msgQueue.receive(); // bloquant
+                Message message = new Message(msg, 0, msg.length);
+                if (listener != null) {
+                	listener.received(message);
+                }
+            } catch (Exception e) {
+                break;
+            }
+        }
+    }
+
+    private void sender() {
+        while (true) {
+            try {
+                Message msg;
+                synchronized (pendingMsg) {
+                    if (!pendingMsg.isEmpty()) {
+                        msg = pendingMsg.poll();
+                    } else {
+                    	pendingMsg.wait();
+                        continue;
+                    }
+                }
+                msgQueue.send(msg.bytes, 0, msg.length); // bloquant
+            } catch (Exception e) {
+                break;
+            }
+        }
+
+    }
 
     public void close() {
-        isClosed = true;
-        if (listener != null) {
-            listener.closed();
-        }
-        System.out.println("MessageQueue closed.");
+        CloseTaskEvent closeTask = new CloseTaskEvent(this, listener);
+        Executor.getSelf().post(closeTask);
+        
     }
 
     public boolean closed() {
         return isClosed;
     }
-
+   
 
 	@Override
-	protected void setListener(abs.AbstractEventMessageQueue.Listener l) {
+	public void setListener(abs.AbstractEventMessageQueue.Listener l) {
 		this.listener = (Listener) l;
+		this.reader.start();
 	}
 }
