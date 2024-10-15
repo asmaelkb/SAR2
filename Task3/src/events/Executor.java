@@ -31,9 +31,13 @@ public class Executor extends Thread {
 			currentRunnable = pumpEvent.remove(0);
 			while (currentRunnable!=null) {
 				currentRunnable.run();
-				currentRunnable = pumpEvent.remove(0);
+				if (pumpEvent.isEmpty()) {
+					sleep();
+				}
+				else {
+					currentRunnable = pumpEvent.remove(0);
+				}
 			}
-			sleep();
 		}
 	}
 	

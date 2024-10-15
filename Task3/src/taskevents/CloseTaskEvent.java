@@ -11,6 +11,7 @@ public class CloseTaskEvent extends TaskEvent {
 	
 	public CloseTaskEvent(EventMessageQueue mq, Listener listener) {
 		this.mq = mq;
+		this.listener = listener;
 	}
 	
 	@Override
